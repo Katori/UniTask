@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using UniRx.Async;
 using UnityEngine;
@@ -13,21 +14,47 @@ public class SandboxMain : MonoBehaviour
     public Button cancelButton;
     CancellationTokenSource cts;
 
-    async void Start()
+    void Start()
     {
-        await UniTask.CompletedTask;  // ok
-
-        // var subject = new Subject<Unit>();
-        //subject.OnCompleted();
-        IObservable<AsyncUnit> subject = default;
-        try
+        okButton.onClick.AddListener(() =>
         {
-            await subject.ToUniTask();  // exception
-        }
-        catch (Exception exception)
+            FooAsync().Forget();
+        });
+        cancelButton.onClick.AddListener(() =>
         {
-            Debug.Log(exception);
-        }
+            BarAsync().Forget();
+        });
     }
+
+    async UniTask<int> FooAsync()
+    {
+        // use F10, will crash.
+        var loop = int.Parse("9");
+        await UniTask.DelayFrame(loop);
+
+        Debug.Log("OK");
+        await UniTask.DelayFrame(loop);
+
+        Debug.Log("Again");
+
+        return 10;
+    }
+
+    async UniTaskVoid BarAsync()
+    {
+        var loop = int.Parse("10");
+
+
+        var foo = await UniTask.FromResult(100);
+
+        Debug.Log("OK");
+
+
+        Debug.Log("Again");
+
+
+    }
+
+
 }
 
